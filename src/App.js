@@ -9,12 +9,22 @@ import FontIcon from 'material-ui/FontIcon';
 
 import AppBar from 'material-ui/AppBar';
 import {BottomNavigation, BottomNavigationItem} from 'material-ui/BottomNavigation';
-import DatePicker from 'material-ui/DatePicker';
+import MenuItem from 'material-ui/MenuItem';
 
+import Drawer from 'material-ui/Drawer';
+
+import ExpenseForm from './components/expense-form';
+import CategoryForm from './components/category-form';
 import ExpensesList from './components/expenses-list';
+import CategoriesList from './components/categories-list';
 
 import Snackbar from 'material-ui/Snackbar';
 
+import {Tabs, Tab} from 'material-ui/Tabs';
+import {Card, CardActions, CardHeader, CardMedia, CardTitle, CardText} from 'material-ui/Card';
+
+import NavigationClose from 'material-ui/svg-icons/navigation/close';
+import IconButton from 'material-ui/IconButton';
 const recentsIcon = <FontIcon className="material-icons">restore</FontIcon>;
 const favoritesIcon = <FontIcon className="material-icons">favorite</FontIcon>;
 
@@ -24,27 +34,62 @@ class App extends Component {
   constructor(props){
     super(props);
 
+    const categories = JSON.parse(localStorage.getItem('categories')) || [];
+    console.log(categories);
+
     this.state = {
-      expenseField: "",
+
       expenses: [
-        {amount: "100.00", date: "2001-01-01"}
+        {amount: "100.00", date: "2001-01-01", category: "Car"}
       ],
-      snackbar: false
+      categories: categories,
+      snackbar: false,
+      drawer: false,
+      expenseForm: {
+        open: false
+      },
+      categoryForm: {
+        open: false
+      }
     }
   }
 
-  handleSubmit = (e) => {
-    e.preventDefault();
+  saveExpense = (amount, date, category) => {
+
     this.setState({
+      expenses: [...this.state.expenses,
+        {
+          amount,
+          date,
+          category
+        }],
+      message: "Expense added!",
       snackbar: true
     })
   }
 
-  handleInputChange = (e) => {
+  handleDrawer = () => {
+    this.setState({ drawer: !this.state.drawer})
+  }
+
+
+  saveCategory = (categoryField) => {
+
+    const categories = [...this.state.categories, categoryField];
     this.setState({
-      expenseField: e.target.value
+      message: "Category saved!",
+      snackbar:true,
+      categories: categories,
+    });
+
+    localStorage.setItem('categories', JSON.stringify(categories));
+  }
+
+  handleSnackbarClose = () => {
+    this.setState({
+      snackbar: false,
+      message: ""
     })
-    console.log(e.target.value);
   }
 
   render() {
@@ -52,43 +97,55 @@ class App extends Component {
       <MuiThemeProvider >
         <div className="App">
 
-          <AppBar title="XTrack"/>
+          <Drawer open={this.state.drawer}>
+            <AppBar onClick={()=> this.setState({drawer:false})} iconElementRight={<IconButton><NavigationClose /></IconButton>}/>
+            <MenuItem onClick={()=> this.setState({drawer:false})}>Profile</MenuItem>
+            <MenuItem onClick={()=> this.setState({drawer:false})}>Settings</MenuItem>
+          </Drawer>
 
-          <div>
-            <TextField hintText="enter expense" onChange={ (e) => { this.handleInputChange(e) }}/>
-          </div>
+          <AppBar title="XTrack" onLeftIconButtonClick={this.handleDrawer}/>
 
-          <DatePicker hintText="enter date"/>
+          <Tabs>
+            <Tab label="Expenses">
 
+              <Card>
+                <ExpensesList expenses={this.state.expenses} />
+              </Card>
 
-          <FloatingActionButton onClick={this.handleSubmit}>
-            <ContentAdd/>
-          </FloatingActionButton>
+              <ExpenseForm
+                open={this.state.expenseForm.open}
+                closeForm={()=>this.setState({expenseForm:{open:false}})}
+                categories={this.state.categories}
+                saveExpense={this.saveExpense}
+              />
 
-          <ExpensesList expenses={this.state.expenses} />
+              <FloatingActionButton className="AddButton" onClick={()=>this.setState({expenseForm:{open:true}})} >
+                <ContentAdd/>
+              </FloatingActionButton>
+            </Tab>
 
+            <Tab label="Categories">
+              <CategoriesList categories={this.state.categories} />
+
+                <CategoryForm
+                  open={this.state.categoryForm.open}
+                  closeForm={()=>this.setState({categoryForm:{open:false}})}
+                  saveCategory={this.saveCategory}
+                />
+
+              <FloatingActionButton className="AddButton" onClick={()=>this.setState({categoryForm:{open:true}})} >
+                <ContentAdd/>
+              </FloatingActionButton>
+
+            </Tab>
+          </Tabs>
           <Snackbar
+            ref={snackbar => this.snackbar = snackbar}
             open={this.state.snackbar}
-            message="Expense added!"
+            message={this.state.message}
             autoHideDuration={1000}
-            onRequestClose={this.handleRequestClose}
+            onRequestClose={this.handleSnackbarClose}
           />
-
-
-          <BottomNavigation selectedIndex={this.state.selectedIndex} style={{background: "lightgrey"}}>
-            <BottomNavigationItem
-              label="Recents"
-              icon={recentsIcon}
-            />
-            <BottomNavigationItem
-              label="Favorites"
-              icon={favoritesIcon}
-            />
-            <BottomNavigationItem
-              label="Nearby"
-              icon={recentsIcon}
-            />
-          </BottomNavigation>
         </div>
       </MuiThemeProvider>
 

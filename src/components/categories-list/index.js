@@ -9,30 +9,27 @@ import {
 } from 'material-ui/Table';
 
 
-export default class ExpensesList extends React.Component {
+export default class CategoriesList extends React.Component {
   render(){
 
-    const expenses = this.props.expenses || [];
+    const categories = this.props.categories || [];
 
     return(
       <Table>
         <TableHeader>
           <TableRow>
             <TableHeaderColumn>ID</TableHeaderColumn>
-            <TableHeaderColumn>Category</TableHeaderColumn>
+
             <TableHeaderColumn>Name</TableHeaderColumn>
-            <TableHeaderColumn>Date/Time</TableHeaderColumn>
+
           </TableRow>
         </TableHeader>
         <TableBody>
 
-          { expenses.map( (expense, idx) => {
-            const date = expense.date || new Date();
+          { categories.map( (category, idx) => {
             return (<TableRow key={idx}>
               <TableRowColumn>{idx}</TableRowColumn>
-              <TableRowColumn>{expense.category || ""}</TableRowColumn>
-              <TableRowColumn>{expense.amount || ""}</TableRowColumn>
-              <TableRowColumn>{date.toString()}</TableRowColumn>
+              <TableRowColumn>{category || ""}</TableRowColumn>
             </TableRow>
           )
           })}
